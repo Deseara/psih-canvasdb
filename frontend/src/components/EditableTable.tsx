@@ -68,10 +68,17 @@ export function EditableTable({ table, tables, records, onUpdate }: EditableTabl
   }
 
   const handleDeleteField = async (fieldId: number) => {
-    if (!confirm('Delete this column? All data in this column will be lost.')) return
+    console.log('Deleting field:', fieldId)
+    
+    if (!confirm('Delete this column? All data in this column will be lost.')) {
+      console.log('Delete cancelled')
+      return
+    }
 
     try {
-      await axios.delete(`http://localhost:8000/api/fields/${fieldId}`)
+      console.log('Sending delete request...')
+      const response = await axios.delete(`http://localhost:8000/api/fields/${fieldId}`)
+      console.log('Delete response:', response.data)
       onUpdate()
     } catch (err) {
       console.error('Error deleting field:', err)
@@ -125,13 +132,21 @@ export function EditableTable({ table, tables, records, onUpdate }: EditableTabl
   }
 
   const handleDeleteRecord = async (recordId: number) => {
-    if (!confirm('Delete this record?')) return
+    console.log('Deleting record:', recordId)
+    
+    if (!confirm('Delete this record?')) {
+      console.log('Delete record cancelled')
+      return
+    }
 
     try {
-      await axios.delete(`http://localhost:8000/api/t/${encodeURIComponent(table.name)}/records/${recordId}`)
+      console.log('Sending delete record request...')
+      const response = await axios.delete(`http://localhost:8000/api/t/${encodeURIComponent(table.name)}/records/${recordId}`)
+      console.log('Delete record response:', response.data)
       onUpdate()
     } catch (err) {
       console.error('Error deleting record:', err)
+      alert('Error deleting record: ' + (err as Error).message)
     }
   }
 
