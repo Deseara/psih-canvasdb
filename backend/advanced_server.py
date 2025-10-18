@@ -494,6 +494,12 @@ class APIHandler(BaseHTTPRequestHandler):
                 else:
                     response = {"error": "Table not found"}
                     
+            elif self.path.startswith('/api/fields/'):
+                field_id = int(self.path.split('/')[-1])
+                c.execute("DELETE FROM fields WHERE id = ?", (field_id,))
+                conn.commit()
+                response = {"success": True, "message": "Field deleted"}
+                
             elif self.path.startswith('/api/canvases/'):
                 canvas_id = int(self.path.split('/')[-1])
                 c.execute("DELETE FROM canvases WHERE id = ?", (canvas_id,))
@@ -532,6 +538,13 @@ class APIHandler(BaseHTTPRequestHandler):
                           (json.dumps(data.get('nodes', [])), json.dumps(data.get('edges', [])), canvas_id))
                 conn.commit()
                 response = {"success": True, "message": "Canvas saved"}
+                
+            elif self.path.startswith('/api/fields/'):
+                field_id = int(self.path.split('/')[-1])
+                c.execute("UPDATE fields SET display_name = ? WHERE id = ?",
+                          (data.get('display_name'), field_id))
+                conn.commit()
+                response = {"success": True, "message": "Field updated"}
                 
             elif '/records/' in self.path:
                 parts = self.path.split('/')

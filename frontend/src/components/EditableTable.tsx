@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Trash2, Edit2 } from 'lucide-react'
+import { Plus, Trash2, Edit2, X } from 'lucide-react'
 import { Table, Record as TableRecord, Field } from '../types'
 import { Button } from './ui/Button'
 import axios from 'axios'
@@ -15,6 +15,8 @@ export function EditableTable({ table, records, onUpdate }: EditableTableProps) 
   const [editValue, setEditValue] = useState('')
   const [addingField, setAddingField] = useState(false)
   const [newFieldName, setNewFieldName] = useState('')
+  const [editingField, setEditingField] = useState<number | null>(null)
+  const [editFieldName, setEditFieldName] = useState('')
 
   const handleCellClick = (record: TableRecord, field: Field) => {
     setEditingCell({ recordId: record.id, fieldName: field.name })
@@ -59,6 +61,33 @@ export function EditableTable({ table, records, onUpdate }: EditableTableProps) 
     }
   }
 
+  const handleDeleteField = async (fieldId: number) => {
+    if (!confirm('Delete this column? All data in this column will be lost.')) return
+
+    try {
+      await axios.delete(`http://localhost:8000/api/fields/${fieldId}`)
+      onUpdate()
+    } catch (err) {
+      console.error('Error deleting field:', err)
+      alert('Error deleting field: ' + (err as Error).message)
+    }
+  }
+
+  const handleEditField = async (fieldId: number) => {
+    if (!editFieldName.trim()) return
+
+    try {
+      await axios.patch(`http://localhost:8000/api/fields/${fieldId}`, {
+        display_name: editFieldName
+      })
+      setEditingField(null)
+      setEditFieldName('')
+      onUpdate()
+    } catch (err) {
+      console.error('Error updating field:', err)
+    }
+  }
+
   const handleAddRecord = async () => {
     try {
       const emptyData: Record<string, any> = {}
@@ -100,7 +129,40 @@ export function EditableTable({ table, records, onUpdate }: EditableTableProps) 
               <th className="border border-blue-400 px-3 py-2 text-left text-sm font-medium w-12">#</th>
               {table.fields.map((field) => (
                 <th key={field.id} className="border border-blue-400 px-3 py-2 text-left text-sm font-medium min-w-[150px]">
-                  {field.display_name}
+                  <div className="flex items-center justify-between group">
+                    {editingField === field.id ? (
+                      <input
+                        type="text"
+                        value={editFieldName}
+                        onChange={(e) => setEditFieldName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleEditField(field.id)
+                          if (e.key === 'Escape') setEditingField(null)
+                        }}
+                        onBlur={() => handleEditField(field.id)}
+                        className="w-full px-2 py-1 text-sm bg-white text-gray-900 rounded"
+                        autoFocus
+                      />
+                    ) : (
+                      <>
+                        <span
+                          onClick={() => {
+                            setEditingField(field.id)
+                            setEditFieldName(field.display_name)
+                          }}
+                          className="cursor-pointer hover:underline"
+                        >
+                          {field.display_name}
+                        </span>
+                        <button
+                          onClick={() => handleDeleteField(field.id)}
+                          className="opacity-0 group-hover:opacity-100 ml-2 text-red-300 hover:text-red-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </th>
               ))}
               {addingField ? (
