@@ -243,18 +243,25 @@ export function EditableTable({ table, records, onUpdate }: EditableTableProps) 
                 </td>
               </tr>
             ))}
-            <tr className="bg-gray-100">
-              <td colSpan={table.fields.length + 3} className="border border-gray-300 px-3 py-2">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleAddRecord}
-                  className="text-blue-600 hover:bg-blue-50"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Row
-                </Button>
+            {/* Empty row for adding new records */}
+            <tr className="bg-blue-50">
+              <td className="border border-gray-300 px-3 py-2 text-sm text-gray-400">
+                +
               </td>
+              {table.fields.map((field) => (
+                <td
+                  key={field.id}
+                  className="border border-gray-300 px-3 py-2 text-sm cursor-pointer hover:bg-blue-100"
+                  onClick={() => {
+                    // Create new record and start editing
+                    handleAddRecord()
+                  }}
+                >
+                  <span className="text-gray-400 italic">Click to add...</span>
+                </td>
+              ))}
+              <td className="border border-gray-300 px-3 py-2"></td>
+              <td className="border border-gray-300 px-2 py-2"></td>
             </tr>
           </tbody>
         </table>
