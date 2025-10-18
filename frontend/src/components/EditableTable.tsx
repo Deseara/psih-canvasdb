@@ -253,7 +253,10 @@ export function EditableTable({ table, tables, records, onUpdate }: EditableTabl
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => handleDeleteRecord(record.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleDeleteRecord(record.id)
+                    }}
                     className="text-red-600 hover:bg-red-50"
                   >
                     <Trash2 className="h-3 w-3" />
