@@ -123,7 +123,10 @@ export default function TablesPage() {
                   <EditableTable
                     table={selectedTable}
                     records={records}
-                    onUpdate={() => queryClient.invalidateQueries({ queryKey: ['records', selectedTable.name] })}
+                    onUpdate={() => {
+                      queryClient.invalidateQueries({ queryKey: ['tables'] })
+                      queryClient.invalidateQueries({ queryKey: ['records', selectedTable.name] })
+                    }}
                   />
                 )}
               </CardContent>
