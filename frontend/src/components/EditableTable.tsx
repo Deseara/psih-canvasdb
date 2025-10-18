@@ -243,16 +243,20 @@ export function EditableTable({ table, tables, records, onUpdate }: EditableTabl
                   )
                 })}
                 <td className="border border-gray-300 px-3 py-2"></td>
-                <td className="border border-gray-300 px-2 py-2 relative">
+                <td className="border border-gray-300 px-2 py-2 relative" style={{ pointerEvents: 'auto' }}>
                   <button
                     type="button"
-                    onClick={(e) => {
+                    onMouseDown={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       console.log('DELETE BUTTON CLICKED for record:', record.id)
                       handleDeleteRecord(record.id)
                     }}
-                    className="relative z-10 p-2 text-red-600 hover:bg-red-100 rounded transition-colors cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                    }}
+                    className="relative z-50 p-2 text-red-600 hover:bg-red-100 rounded transition-colors cursor-pointer"
                     title="Delete row"
                     style={{ pointerEvents: 'auto' }}
                   >
