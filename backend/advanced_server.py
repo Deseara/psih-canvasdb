@@ -6,7 +6,7 @@ import sqlite3
 import os
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, unquote
 import traceback
 
 # Initialize SQLite database
@@ -226,7 +226,7 @@ class APIHandler(BaseHTTPRequestHandler):
                 response = tables
                 
             elif path.startswith('/api/t/'):
-                table_name = path.split('/')[-1]
+                table_name = unquote(path.split('/')[-1])
                 c.execute('SELECT id FROM tables WHERE name = ?', (table_name,))
                 table = c.fetchone()
                 if table:
@@ -376,7 +376,7 @@ class APIHandler(BaseHTTPRequestHandler):
                 
             elif self.path.startswith('/api/t/') and '/records' not in self.path:
                 # Create new record
-                table_name = self.path.split('/')[-1]
+                table_name = unquote(self.path.split('/')[-1])
                 c.execute('SELECT id FROM tables WHERE name = ?', (table_name,))
                 table = c.fetchone()
                 if table:
@@ -483,7 +483,7 @@ class APIHandler(BaseHTTPRequestHandler):
                 
             elif '/records/' in self.path:
                 parts = self.path.split('/')
-                table_name = parts[3]
+                table_name = unquote(parts[3])
                 record_id = int(parts[5])
                 c.execute('SELECT id FROM tables WHERE name = ?', (table_name,))
                 table = c.fetchone()
@@ -548,7 +548,7 @@ class APIHandler(BaseHTTPRequestHandler):
                 
             elif '/records/' in self.path:
                 parts = self.path.split('/')
-                table_name = parts[3]
+                table_name = unquote(parts[3])
                 record_id = int(parts[5])
                 c.execute('SELECT id FROM tables WHERE name = ?', (table_name,))
                 table = c.fetchone()
