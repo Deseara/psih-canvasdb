@@ -134,11 +134,6 @@ export function EditableTable({ table, tables, records, onUpdate }: EditableTabl
   const handleDeleteRecord = async (recordId: number) => {
     console.log('Deleting record:', recordId)
     
-    if (!confirm('Delete this record?')) {
-      console.log('Delete record cancelled')
-      return
-    }
-
     try {
       console.log('Sending delete record request...')
       const response = await axios.delete(`http://localhost:8000/api/t/${encodeURIComponent(table.name)}/records/${recordId}`)
