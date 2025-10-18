@@ -123,29 +123,29 @@ export default function TablesPage() {
                     No records found. Add some data to get started.
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left p-2 font-medium">ID</th>
+                  <div className="overflow-x-auto rounded-lg border">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                          <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">ID</th>
                           {selectedTable.fields.map((field) => (
-                            <th key={field.id} className="text-left p-2 font-medium">
+                            <th key={field.id} className="text-left px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
                               {field.display_name}
                             </th>
                           ))}
-                          <th className="text-left p-2 font-medium">Actions</th>
+                          <th className="text-right px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Actions</th>
                         </tr>
                       </thead>
-                      <tbody>
-                        {records.map((record) => (
-                          <tr key={record.id} className="border-b hover:bg-accent/50">
-                            <td className="p-2">{record.id}</td>
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {records.map((record, idx) => (
+                          <tr key={record.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${idx % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50/50 dark:bg-gray-800/50'}`}>
+                            <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{record.id}</td>
                             {selectedTable.fields.map((field) => (
-                              <td key={field.id} className="p-2">
+                              <td key={field.id} className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
                                 {record.data[field.name] || '-'}
                               </td>
                             ))}
-                            <td className="p-2">
+                            <td className="px-4 py-3 text-right">
                               <div className="flex space-x-1">
                                 <Button
                                   size="sm"

@@ -7,6 +7,9 @@ export interface Field {
   options?: Record<string, any>;
   required: boolean;
   created_at: string;
+  // For relation fields
+  relation_table?: string;
+  relation_field?: string;
 }
 
 export interface Table {
