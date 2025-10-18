@@ -412,10 +412,16 @@ class APIHandler(BaseHTTPRequestHandler):
             elif self.path.startswith('/api/tables/') and '/fields' in self.path:
                 # Add field to table
                 table_id = int(self.path.split('/')[3])
+                
+                # Prepare options - include relation_table if it's a relation field
+                options = data.get('options')
+                if data.get('field_type') == 'relation' and data.get('relation_table'):
+                    options = {'relation_table': data.get('relation_table')}
+                
                 c.execute("INSERT INTO fields (table_id, name, display_name, field_type, required, default_value, options) VALUES (?, ?, ?, ?, ?, ?, ?)",
                           (table_id, data.get('name'), data.get('display_name'), 
                            data.get('field_type', 'text'), data.get('required', False),
-                           data.get('default_value'), json.dumps(data.get('options')) if data.get('options') else None))
+                           data.get('default_value'), json.dumps(options) if options else None))
                 field_id = c.lastrowid
                 conn.commit()
                 response = {
@@ -425,6 +431,7 @@ class APIHandler(BaseHTTPRequestHandler):
                     'display_name': data.get('display_name'),
                     'field_type': data.get('field_type', 'text'),
                     'required': data.get('required', False),
+                    'relation_table': data.get('relation_table'),
                     'created_at': datetime.now().isoformat()
                 }
                 

@@ -132,6 +132,7 @@ export default function TablesPage() {
                 ) : (
                   <EditableTable
                     table={selectedTable}
+                    tables={tables}
                     records={records}
                     onUpdate={() => {
                       queryClient.invalidateQueries({ queryKey: ['tables'] })

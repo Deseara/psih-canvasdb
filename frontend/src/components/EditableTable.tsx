@@ -2,15 +2,17 @@ import { useState } from 'react'
 import { Plus, Trash2, Edit2, X } from 'lucide-react'
 import { Table, Record as TableRecord, Field } from '../types'
 import { Button } from './ui/Button'
+import { FieldConfigModal } from './FieldConfigModal'
 import axios from 'axios'
 
 interface EditableTableProps {
   table: Table
+  tables: Table[]
   records: TableRecord[]
   onUpdate: () => void
 }
 
-export function EditableTable({ table, records, onUpdate }: EditableTableProps) {
+export function EditableTable({ table, tables, records, onUpdate }: EditableTableProps) {
   const [editingCell, setEditingCell] = useState<{ recordId: number; fieldName: string } | null>(null)
   const [editValue, setEditValue] = useState('')
   const [addingField, setAddingField] = useState(false)
@@ -41,23 +43,27 @@ export function EditableTable({ table, records, onUpdate }: EditableTableProps) 
     }
   }
 
-  const handleAddField = async () => {
-    if (!newFieldName.trim()) return
-
+  const handleAddField = async (config: {
+    name: string
+    display_name: string
+    field_type: 'text' | 'number' | 'relation'
+    relation_table?: string
+  }) => {
     try {
       // Add field to table
       await axios.post(`http://localhost:8000/api/tables/${table.id}/fields`, {
-        name: newFieldName.toLowerCase().replace(/\s+/g, '_'),
-        display_name: newFieldName,
-        field_type: 'text',
-        required: false
+        name: config.name,
+        display_name: config.display_name,
+        field_type: config.field_type,
+        required: false,
+        relation_table: config.relation_table
       })
 
       setAddingField(false)
-      setNewFieldName('')
       onUpdate()
     } catch (err) {
       console.error('Error adding field:', err)
+      alert('Error adding field: ' + (err as Error).message)
     }
   }
 
@@ -174,34 +180,16 @@ export function EditableTable({ table, records, onUpdate }: EditableTableProps) 
                   </div>
                 </th>
               ))}
-              {addingField ? (
-                <th className="border border-blue-400 px-3 py-2 min-w-[150px]">
-                  <input
-                    type="text"
-                    value={newFieldName}
-                    onChange={(e) => setNewFieldName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleAddField()
-                      if (e.key === 'Escape') setAddingField(false)
-                    }}
-                    onBlur={handleAddField}
-                    placeholder="Field name..."
-                    className="w-full px-2 py-1 text-sm bg-white text-gray-900 rounded"
-                    autoFocus
-                  />
-                </th>
-              ) : (
-                <th className="border border-blue-400 px-3 py-2 w-12">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setAddingField(true)}
-                    className="text-white hover:bg-blue-600"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </th>
-              )}
+              <th className="border border-blue-400 px-3 py-2 w-12">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setAddingField(true)}
+                  className="text-white hover:bg-blue-600"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </th>
               <th className="border border-blue-400 px-3 py-2 w-12"></th>
             </tr>
           </thead>
@@ -268,6 +256,14 @@ export function EditableTable({ table, records, onUpdate }: EditableTableProps) 
           </tbody>
         </table>
       </div>
+
+      {addingField && (
+        <FieldConfigModal
+          tables={tables}
+          onSave={handleAddField}
+          onClose={() => setAddingField(false)}
+        />
+      )}
     </div>
   )
 }
