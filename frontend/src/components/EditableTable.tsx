@@ -219,7 +219,13 @@ export function EditableTable({ table, tables, records, onUpdate }: EditableTabl
                     <td
                       key={field.id}
                       className="border border-gray-300 px-3 py-2 text-sm cursor-pointer hover:bg-blue-50"
-                      onClick={() => !isEditing && handleCellClick(record, field)}
+                      onClick={(e) => {
+                        // Don't trigger cell edit if clicking on delete button
+                        if ((e.target as HTMLElement).closest('button')) {
+                          return
+                        }
+                        !isEditing && handleCellClick(record, field)
+                      }}
                     >
                       {isEditing ? (
                         <input
@@ -243,22 +249,16 @@ export function EditableTable({ table, tables, records, onUpdate }: EditableTabl
                   )
                 })}
                 <td className="border border-gray-300 px-3 py-2"></td>
-                <td className="border border-gray-300 px-2 py-2 relative" style={{ pointerEvents: 'auto' }}>
+                <td className="border border-gray-300 px-2 py-2">
                   <button
                     type="button"
-                    onMouseDown={(e) => {
-                      e.preventDefault()
+                    onClick={(e) => {
                       e.stopPropagation()
                       console.log('DELETE BUTTON CLICKED for record:', record.id)
                       handleDeleteRecord(record.id)
                     }}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                    }}
-                    className="relative z-50 p-2 text-red-600 hover:bg-red-100 rounded transition-colors cursor-pointer"
+                    className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
                     title="Delete row"
-                    style={{ pointerEvents: 'auto' }}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
