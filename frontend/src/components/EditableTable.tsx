@@ -69,11 +69,6 @@ export function EditableTable({ table, tables, records, onUpdate }: EditableTabl
 
   const handleDeleteField = async (fieldId: number) => {
     console.log('Deleting field:', fieldId)
-    
-    if (!confirm('Delete this column? All data in this column will be lost.')) {
-      console.log('Delete cancelled')
-      return
-    }
 
     try {
       console.log('Sending delete request...')
