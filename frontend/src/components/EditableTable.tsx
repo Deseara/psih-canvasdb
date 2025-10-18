@@ -70,9 +70,13 @@ export function EditableTable({ table, records, onUpdate }: EditableTableProps) 
         data: emptyData
       })
 
-      onUpdate()
+      // Small delay to ensure backend has processed the request
+      setTimeout(() => {
+        onUpdate()
+      }, 100)
     } catch (err) {
       console.error('Error adding record:', err)
+      alert('Error adding record: ' + (err as Error).message)
     }
   }
 
