@@ -180,12 +180,16 @@ export function EditableTable({ table, tables, records, onUpdate }: EditableTabl
                           {field.display_name}
                         </span>
                         <button
+                          type="button"
                           onClick={(e) => {
+                            e.preventDefault()
                             e.stopPropagation()
+                            console.log('DELETE COLUMN CLICKED for field:', field.id)
                             handleDeleteField(field.id)
                           }}
-                          className="ml-2 text-red-400 hover:text-red-200 transition-colors"
+                          className="relative z-10 ml-2 text-red-400 hover:text-red-200 transition-colors cursor-pointer"
                           title="Delete column"
+                          style={{ pointerEvents: 'auto' }}
                         >
                           <X className="h-4 w-4" />
                         </button>
@@ -244,15 +248,18 @@ export function EditableTable({ table, tables, records, onUpdate }: EditableTabl
                   )
                 })}
                 <td className="border border-gray-300 px-3 py-2"></td>
-                <td className="border border-gray-300 px-2 py-2" onClick={(e) => e.stopPropagation()}>
+                <td className="border border-gray-300 px-2 py-2 relative">
                   <button
+                    type="button"
                     onClick={(e) => {
+                      e.preventDefault()
                       e.stopPropagation()
                       console.log('DELETE BUTTON CLICKED for record:', record.id)
                       handleDeleteRecord(record.id)
                     }}
-                    className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                    className="relative z-10 p-2 text-red-600 hover:bg-red-100 rounded transition-colors cursor-pointer"
                     title="Delete row"
+                    style={{ pointerEvents: 'auto' }}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
