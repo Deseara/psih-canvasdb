@@ -6,6 +6,7 @@ import { Table, Record as TableRecord } from '../types'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
+import axios from 'axios'
 
 export default function TablesPage() {
   const [selectedTable, setSelectedTable] = useState<Table | null>(null)
@@ -54,19 +55,43 @@ export default function TablesPage() {
               {tables.map((table) => (
                 <div
                   key={table.id}
-                  className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                  className={`p-3 rounded-lg border transition-colors ${
                     selectedTable?.id === table.id
                       ? 'bg-primary text-primary-foreground'
                       : 'hover:bg-accent'
                   }`}
-                  onClick={() => setSelectedTable(table)}
                 >
-                  <div className="flex items-center space-x-2">
-                    <TableIcon className="h-4 w-4" />
-                    <div>
-                      <div className="font-medium">{table.display_name}</div>
-                      <div className="text-sm opacity-70">{table.name}</div>
+                  <div className="flex items-center justify-between">
+                    <div 
+                      className="flex items-center space-x-2 flex-1 cursor-pointer"
+                      onClick={() => setSelectedTable(table)}
+                    >
+                      <TableIcon className="h-4 w-4" />
+                      <div>
+                        <div className="font-medium">{table.display_name}</div>
+                        <div className="text-sm opacity-70">{table.name}</div>
+                      </div>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm(`Delete table "${table.display_name}"?`)) {
+                          axios.delete(`http://localhost:8000/api/tables/${table.id}`)
+                            .then(() => {
+                              queryClient.invalidateQueries({ queryKey: ['tables'] });
+                              if (selectedTable?.id === table.id) {
+                                setSelectedTable(null);
+                              }
+                            })
+                            .catch(err => alert('Error: ' + err.message));
+                        }
+                      }}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               ))}
