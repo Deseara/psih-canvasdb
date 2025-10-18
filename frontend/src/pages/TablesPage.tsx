@@ -6,6 +6,7 @@ import { Table, Record as TableRecord } from '../types'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
+import { EditableTable } from '../components/EditableTable'
 import axios from 'axios'
 
 export default function TablesPage() {
@@ -118,62 +119,12 @@ export default function TablesPage() {
               <CardContent>
                 {recordsLoading ? (
                   <div className="text-center py-8">Loading records...</div>
-                ) : records.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No records found. Add some data to get started.
-                  </div>
                 ) : (
-                  <div className="overflow-x-auto rounded-lg border">
-                    <table className="w-full">
-                      <thead className="bg-gray-50 dark:bg-gray-800">
-                        <tr>
-                          <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">ID</th>
-                          {selectedTable.fields.map((field) => (
-                            <th key={field.id} className="text-left px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                              {field.display_name}
-                            </th>
-                          ))}
-                          <th className="text-right px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {records.map((record, idx) => (
-                          <tr key={record.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${idx % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50/50 dark:bg-gray-800/50'}`}>
-                            <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{record.id}</td>
-                            {selectedTable.fields.map((field) => (
-                              <td key={field.id} className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-                                {record.data[field.name] || '-'}
-                              </td>
-                            ))}
-                            <td className="px-4 py-3 text-right">
-                              <div className="flex space-x-1">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => setEditingRecord(record)}
-                                >
-                                  <Edit className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => {
-                                    if (confirm('Delete this record?')) {
-                                      recordsApi.delete(selectedTable.name, record.id).then(() => {
-                                        queryClient.invalidateQueries({ queryKey: ['records', selectedTable.name] })
-                                      })
-                                    }
-                                  }}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <EditableTable
+                    table={selectedTable}
+                    records={records}
+                    onUpdate={() => queryClient.invalidateQueries({ queryKey: ['records', selectedTable.name] })}
+                  />
                 )}
               </CardContent>
             </Card>
@@ -231,42 +182,23 @@ export default function TablesPage() {
 
 // Create Table Modal Component
 function CreateTableModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
-  const [formData, setFormData] = useState({
-    name: '',
-    display_name: '',
-    description: '',
-    fields: [{ name: '', display_name: '', field_type: 'text', required: false }]
-  })
+  const [tableName, setTableName] = useState('')
 
   const createTableMutation = useMutation({
-    mutationFn: tablesApi.create,
+    mutationFn: (name: string) => tablesApi.create({
+      name: name.toLowerCase().replace(/\s+/g, '_'),
+      display_name: name,
+      description: '',
+      fields: []
+    }),
     onSuccess,
   })
 
-  const addField = () => {
-    setFormData(prev => ({
-      ...prev,
-      fields: [...prev.fields, { name: '', display_name: '', field_type: 'text', required: false }]
-    }))
-  }
-
-  const removeField = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      fields: prev.fields.filter((_, i) => i !== index)
-    }))
-  }
-
-  const updateField = (index: number, field: any) => {
-    setFormData(prev => ({
-      ...prev,
-      fields: prev.fields.map((f, i) => i === index ? field : f)
-    }))
-  }
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    createTableMutation.mutate(formData)
+    if (tableName.trim()) {
+      createTableMutation.mutate(tableName.trim())
+    }
   }
 
   return (
@@ -278,88 +210,17 @@ function CreateTableModal({ onClose, onSuccess }: { onClose: () => void; onSucce
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Table Name</label>
+              <label className="block text-sm font-medium mb-2">Table Name</label>
               <Input
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="e.g., users"
+                value={tableName}
+                onChange={(e) => setTableName(e.target.value)}
+                placeholder="e.g., Products, Customers, Orders..."
                 required
+                autoFocus
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Display Name</label>
-              <Input
-                value={formData.display_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
-                placeholder="e.g., Users"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Description</label>
-              <Input
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Optional description"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium">Fields</label>
-                <Button type="button" size="sm" onClick={addField}>
-                  <Plus className="h-3 w-3 mr-1" />
-                  Add Field
-                </Button>
-              </div>
-              {formData.fields.map((field, index) => (
-                <div key={index} className="border rounded p-3 mb-2">
-                  <div className="grid grid-cols-2 gap-2 mb-2">
-                    <Input
-                      placeholder="Field name (e.g., email)"
-                      value={field.name}
-                      onChange={(e) => updateField(index, { ...field, name: e.target.value })}
-                    />
-                    <Input
-                      placeholder="Display name (e.g., Email)"
-                      value={field.display_name}
-                      onChange={(e) => updateField(index, { ...field, display_name: e.target.value })}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <select
-                      value={field.field_type}
-                      onChange={(e) => updateField(index, { ...field, field_type: e.target.value })}
-                      className="border rounded px-2 py-1"
-                    >
-                      <option value="text">Text</option>
-                      <option value="number">Number</option>
-                      <option value="select">Select</option>
-                    </select>
-                    <div className="flex items-center space-x-2">
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={field.required}
-                          onChange={(e) => updateField(index, { ...field, required: e.target.checked })}
-                          className="mr-1"
-                        />
-                        Required
-                      </label>
-                      {formData.fields.length > 1 && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => removeField(index)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+              <p className="text-sm text-gray-500 mt-1">
+                You can add fields after creating the table
+              </p>
             </div>
 
             <div className="flex justify-end space-x-2">
