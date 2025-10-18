@@ -95,14 +95,12 @@ export function EditableTable({ table, records, onUpdate }: EditableTableProps) 
         emptyData[field.name] = ''
       })
 
-      await axios.post(`http://localhost:8000/api/t/${table.name}`, {
+      const response = await axios.post(`http://localhost:8000/api/t/${table.name}`, {
         data: emptyData
       })
 
-      // Small delay to ensure backend has processed the request
-      setTimeout(() => {
-        onUpdate()
-      }, 100)
+      console.log('Record added:', response.data)
+      onUpdate()
     } catch (err) {
       console.error('Error adding record:', err)
       alert('Error adding record: ' + (err as Error).message)
