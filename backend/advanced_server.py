@@ -435,6 +435,27 @@ class APIHandler(BaseHTTPRequestHandler):
                     'created_at': datetime.now().isoformat()
                 }
                 
+            elif self.path.startswith('/api/webhook/'):
+                # Webhook endpoint - принимает данные и добавляет в таблицу
+                table_name = unquote(self.path.split('/')[-1])
+                c.execute('SELECT id FROM tables WHERE name = ?', (table_name,))
+                table = c.fetchone()
+                
+                if table:
+                    # Добавляем запись в таблицу
+                    c.execute("INSERT INTO records (table_id, data) VALUES (?, ?)",
+                              (table[0], json.dumps(data)))
+                    record_id = c.lastrowid
+                    conn.commit()
+                    
+                    response = {
+                        'success': True,
+                        'record_id': record_id,
+                        'message': f'Data added to {table_name}'
+                    }
+                else:
+                    response = {"error": "Table not found"}
+                
             elif self.path == '/api/canvases/execute':
                 canvas_id = data.get('canvas_id')
                 # Simple execution - just save as view
