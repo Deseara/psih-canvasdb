@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Table as TableIcon, Edit, Trash2 } from 'lucide-react'
 import { tablesApi, recordsApi } from '../lib/api'
@@ -22,6 +22,16 @@ export default function TablesPage() {
     queryKey: ['tables'],
     queryFn: () => tablesApi.getAll().then(res => res.data),
   })
+
+  // Update selected table when tables data changes
+  useEffect(() => {
+    if (selectedTable && tables.length > 0) {
+      const updatedTable = tables.find((t: Table) => t.id === selectedTable.id)
+      if (updatedTable && JSON.stringify(updatedTable) !== JSON.stringify(selectedTable)) {
+        setSelectedTable(updatedTable)
+      }
+    }
+  }, [tables, selectedTable])
 
   // Fetch records for selected table
   const { data: records = [], isLoading: recordsLoading } = useQuery({
