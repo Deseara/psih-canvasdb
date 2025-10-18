@@ -409,6 +409,25 @@ class APIHandler(BaseHTTPRequestHandler):
                     'created_at': datetime.now().isoformat()
                 }
                 
+            elif self.path.startswith('/api/tables/') and '/fields' in self.path:
+                # Add field to table
+                table_id = int(self.path.split('/')[3])
+                c.execute("INSERT INTO fields (table_id, name, display_name, field_type, required, default_value, options) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                          (table_id, data.get('name'), data.get('display_name'), 
+                           data.get('field_type', 'text'), data.get('required', False),
+                           data.get('default_value'), json.dumps(data.get('options')) if data.get('options') else None))
+                field_id = c.lastrowid
+                conn.commit()
+                response = {
+                    'id': field_id,
+                    'table_id': table_id,
+                    'name': data.get('name'),
+                    'display_name': data.get('display_name'),
+                    'field_type': data.get('field_type', 'text'),
+                    'required': data.get('required', False),
+                    'created_at': datetime.now().isoformat()
+                }
+                
             elif self.path == '/api/canvases/execute':
                 canvas_id = data.get('canvas_id')
                 # Simple execution - just save as view
