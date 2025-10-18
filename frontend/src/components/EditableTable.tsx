@@ -30,7 +30,7 @@ export function EditableTable({ table, records, onUpdate }: EditableTableProps) 
 
       const updatedData = { ...record.data, [fieldName]: editValue }
       
-      await axios.patch(`http://localhost:8000/api/t/${table.name}/records/${recordId}`, {
+      await axios.patch(`http://localhost:8000/api/t/${encodeURIComponent(table.name)}/records/${recordId}`, {
         data: updatedData
       })
       
@@ -101,8 +101,9 @@ export function EditableTable({ table, records, onUpdate }: EditableTableProps) 
       })
 
       console.log('Adding record with data:', emptyData)
+      console.log('Table name:', table.name)
       
-      const response = await axios.post(`http://localhost:8000/api/t/${table.name}`, {
+      const response = await axios.post(`http://localhost:8000/api/t/${encodeURIComponent(table.name)}`, {
         data: emptyData
       })
 
@@ -121,7 +122,7 @@ export function EditableTable({ table, records, onUpdate }: EditableTableProps) 
     if (!confirm('Delete this record?')) return
 
     try {
-      await axios.delete(`http://localhost:8000/api/t/${table.name}/records/${recordId}`)
+      await axios.delete(`http://localhost:8000/api/t/${encodeURIComponent(table.name)}/records/${recordId}`)
       onUpdate()
     } catch (err) {
       console.error('Error deleting record:', err)
