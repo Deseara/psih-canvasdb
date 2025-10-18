@@ -170,10 +170,14 @@ export function EditableTable({ table, tables, records, onUpdate }: EditableTabl
                           {field.display_name}
                         </span>
                         <button
-                          onClick={() => handleDeleteField(field.id)}
-                          className="opacity-0 group-hover:opacity-100 ml-2 text-red-300 hover:text-red-100 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteField(field.id)
+                          }}
+                          className="ml-2 text-red-400 hover:text-red-200 transition-colors"
+                          title="Delete column"
                         >
-                          <X className="h-3 w-3" />
+                          <X className="h-4 w-4" />
                         </button>
                       </>
                     )}
