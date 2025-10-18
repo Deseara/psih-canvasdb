@@ -90,16 +90,26 @@ export function EditableTable({ table, records, onUpdate }: EditableTableProps) 
 
   const handleAddRecord = async () => {
     try {
+      if (table.fields.length === 0) {
+        alert('Please add at least one column first')
+        return
+      }
+
       const emptyData: Record<string, any> = {}
       table.fields.forEach(field => {
         emptyData[field.name] = ''
       })
 
+      console.log('Adding record with data:', emptyData)
+      
       const response = await axios.post(`http://localhost:8000/api/t/${table.name}`, {
         data: emptyData
       })
 
-      console.log('Record added:', response.data)
+      console.log('Record added successfully:', response.data)
+      
+      // Force refresh after a short delay
+      await new Promise(resolve => setTimeout(resolve, 200))
       onUpdate()
     } catch (err) {
       console.error('Error adding record:', err)
@@ -243,25 +253,16 @@ export function EditableTable({ table, records, onUpdate }: EditableTableProps) 
                 </td>
               </tr>
             ))}
-            {/* Empty row for adding new records */}
-            <tr className="bg-blue-50">
-              <td className="border border-gray-300 px-3 py-2 text-sm text-gray-400">
-                +
-              </td>
-              {table.fields.map((field) => (
-                <td
-                  key={field.id}
-                  className="border border-gray-300 px-3 py-2 text-sm cursor-pointer hover:bg-blue-100"
-                  onClick={() => {
-                    // Create new record and start editing
-                    handleAddRecord()
-                  }}
+            <tr className="bg-gray-100">
+              <td colSpan={table.fields.length + 3} className="border border-gray-300 px-3 py-2 text-center">
+                <button
+                  onClick={handleAddRecord}
+                  className="text-blue-600 hover:text-blue-700 font-medium text-sm py-1 px-3 rounded hover:bg-blue-50 transition-colors inline-flex items-center gap-1"
                 >
-                  <span className="text-gray-400 italic">Click to add...</span>
-                </td>
-              ))}
-              <td className="border border-gray-300 px-3 py-2"></td>
-              <td className="border border-gray-300 px-2 py-2"></td>
+                  <Plus className="h-4 w-4" />
+                  Add Row
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
